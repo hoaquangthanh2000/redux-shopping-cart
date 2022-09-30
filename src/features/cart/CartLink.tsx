@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import styles from "./CartLink.module.css";
-import { getNumItems,getMemoizedNumItems } from "./cartSlice";
+import { getMemoizedNumItems } from "./cartSlice";
 import { useAppSelector } from "../../app/hooks";
 
 export function CartLink() {

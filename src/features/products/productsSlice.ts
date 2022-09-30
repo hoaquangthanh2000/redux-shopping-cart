@@ -7,9 +7,9 @@ export interface ProductsState {
 
 const initialState: ProductsState = {
     products: {
-
     }
 }
+
 const productsSlice = createSlice({
     name:"products",
     initialState,
