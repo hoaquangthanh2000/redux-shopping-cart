@@ -1,17 +1,28 @@
-import { createSlice,PayloadAction,createSelector }  from "@reduxjs/toolkit"
-import { RootState } from "../../app/store"
+import { createSlice,createAsyncThunk,PayloadAction,createSelector }  from "@reduxjs/toolkit"
+import { RootState,AppDispatch } from "../../app/store"
+import { checkout,CartItems } from "../../app/api"
 
 type CheckoutState = "LOADING" | "READY" | "ERROR"
 
 export interface CartState {
     items:{ [productID:string]: number }
     checkoutState: CheckoutState
+    errorMessage:string
 }
 
 const initialState: CartState = {
     items:{},
-    checkoutState: "ERROR"
+    checkoutState: "READY",
+    errorMessage:""
 }
+
+export const checkoutCart = createAsyncThunk("cart/checkout", async (_,thunkAPI) => {
+    const state = thunkAPI.getState() as RootState
+    const items = state.cart.items
+    const response = await checkout(items)
+    return response   
+})
+
 
 const cartSlice = createSlice({
     name:"cart",
@@ -34,8 +45,22 @@ const cartSlice = createSlice({
         }
     },
     extraReducers: function(builder){
-        builder.addCase("cart/checkout/pending", (state,action)=> {
+        builder.addCase(checkoutCart.pending, (state)=> {
             state.checkoutState = "LOADING"
+        })
+        builder.addCase(checkoutCart.fulfilled, (state, action: PayloadAction<{ success: boolean }>)=> {
+            const {success} = action.payload
+            if(success ){ 
+                state.checkoutState = "READY"
+                state.items = {}
+            }else{  
+                state.checkoutState = "ERROR"
+            }
+        })
+        builder.addCase(checkoutCart.rejected, (state,action) => {
+            state.checkoutState = "ERROR"
+            state.errorMessage = action.error.message || ""
+            console.log(checkoutCart.rejected)
         })
     }
 })
@@ -44,15 +69,6 @@ const cartSlice = createSlice({
 export const {addToCart,removeFromCart, updateQuantity} = cartSlice.actions
 export default cartSlice.reducer
 
-// export function getNumItems(state:RootState) {
-//     console.log("calling getNumItems");
-    
-//     let numItems = 0 
-//     for(let id in state.cart.items){
-//         numItems += state.cart.items[id]
-//     }
-//     return numItems
-// }
 
 export const getMemoizedNumItems = createSelector(
     (state: RootState) => state.cart.items,

@@ -32,6 +32,7 @@ export async function checkout(items: CartItems): Promise<CheckoutResponse> {
   return data as CheckoutResponse;
 }
 
+
 // utility function to simulate slowness in an API call
 const sleep = (time: number) =>
   new Promise((res) => setTimeout(res, time));
